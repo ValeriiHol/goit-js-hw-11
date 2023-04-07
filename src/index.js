@@ -21,7 +21,7 @@ let lightbox = new SimpleLightbox('.photo-card a', {
 
 async function onSearchSmt(ev) {
   ev.preventDefault();
-  pageNumber += 1;
+  pageNumber = 0;
   gallery.innerHTML = '';
   buttonLoadMore.classList.add('is-hidden');
   const formData = new FormData(formInput);
@@ -31,16 +31,18 @@ async function onSearchSmt(ev) {
     return;
   }
   try {
+    pageNumber += 1;
+    // console.log(pageNumber);
     const { data } = await fetchImages(queryValue, pageNumber, perPage);
     if (data.totalHits === 0) {
       alertNoImagesFound();
     } else {
       createMarkup(data);
-      lightbox.refresh();
       alertTotalImagesFound(data);
       buttonLoadMore.classList.remove('is-hidden');
     }
     gallery.insertAdjacentHTML('beforeend', createMarkup(data));
+    lightbox.refresh();
   } catch (error) {
     console.log(error);
   }
@@ -53,12 +55,12 @@ async function onLoadMoreBtn() {
   try {
     const { data } = await fetchImages(queryValue, pageNumber, perPage);
     createMarkup(data);
-    lightbox.refresh();
     if (pageNumber * perPage > data.totalHits) {
-        buttonLoadMore.classList.add('is-hidden');
+      buttonLoadMore.classList.add('is-hidden');
       alertReachedImages();
     }
     gallery.insertAdjacentHTML('beforeend', createMarkup(data));
+    lightbox.refresh();
   } catch (error) {}
 }
 
@@ -111,20 +113,22 @@ function createMarkup(data) {
   return markup;
 }
 
-
 function alertTotalImagesFound(data) {
-    Notiflix.Notify.success(`'Hooray! We found ${data.totalHits} images.'`)
-  }
-  
-  function alertNoImagesFound() {
-    Notiflix.Notify.failure('Sorry, there are no images matching your search query. Please try again.')
-  }
-  
-  function alertReachedImages() {
-    Notiflix.Notify.failure("We're sorry, but you've reached the end of search results.")
-  }
-  
-  function alertEmptyQuery() {
-    Notiflix.Notify.failure('Please write something and try again.')
-  }
-  
+  Notiflix.Notify.success(`'Hooray! We found ${data.totalHits} images.'`);
+}
+
+function alertNoImagesFound() {
+  Notiflix.Notify.failure(
+    'Sorry, there are no images matching your search query. Please try again.'
+  );
+}
+
+function alertReachedImages() {
+  Notiflix.Notify.failure(
+    "We're sorry, but you've reached the end of search results."
+  );
+}
+
+function alertEmptyQuery() {
+  Notiflix.Notify.failure('Please write something and try again.');
+}
